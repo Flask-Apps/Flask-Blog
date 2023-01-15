@@ -1,9 +1,14 @@
-{% extends "base.html" %} {% block title %} IBlog {% endblock %}
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block title %} IBlog {% endblock %}
 
 {% block page_content %}
 <div class="page-header">
-  <h1>Hello, {{ name|capitalize }}!</h1>
+  <h1>Hello, {% if name %} {{ name|capitalize }} {% else %} Stranger {% endif %}</h1>
 </div>
+
+{{ wtf.quick_form(form) }}
+
 {% import 'macros.html' as macros %}
 <ul>
   {% for comment in comments %} {{ macros.render_comment(comment) }} {% endfor
