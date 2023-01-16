@@ -30,9 +30,15 @@ class NameForm(FlaskForm):
     submit = SubmitField("Submit")
 
 
-@app.route("/")
+@app.route("/", methods=["GET", "POST"])
 def index():
-    return render_template("index.html", current_time=datetime.utcnow())
+    name = None
+    form = NameForm()
+    if form.validate_on_submit():
+        name = form.name.data
+        form.name.data = ""
+    return render_template("index.html", form=form,
+                           name=name, current_time=datetime.utcnow())
 
 
 @app.route("/user/<name>")
@@ -42,7 +48,9 @@ def user(name):
         "When the horizon is at the bottom it's interesting",
         "When the horizon is at the middle it's not interesting",
     ]
-    return render_template("user.html", name=name, form=NameForm(), comments=comments)
+    return render_template("user.html",
+                           name=name,
+                           comments=comments)
 
 
 @app.errorhandler(404)

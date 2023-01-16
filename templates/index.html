@@ -1,17 +1,19 @@
-{% extends "base.html" %} 
-
-{% block title %} IBlog - Home {% endblock %} 
-
-{% block head %}
-
-{{ super() }} {% endblock %} 
-
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block title %} IBlog - Home{% endblock %}
 
 {% block page_content %}
-
 <div class="page-header">
-    <h1>Hello, World!</h1>
+  <h1>Hello, {% if name %} {{ name|capitalize }} {% else %} Stranger {% endif %}</h1>
 </div>
+
+{{ wtf.quick_form(form) }}
+
+{% import 'macros.html' as macros %}
+<ul>
+  {% for comment in comments %} {{ macros.render_comment(comment) }} {% endfor
+  %}
+</ul>
 <p>The local date and time is {{ moment(current_time).format('LLL') }}.</p>
 <p>That was {{ moment(current_time).fromNow(refresh=True) }}</p>
 {% endblock page_content %}
