@@ -14,7 +14,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-print(basedir)
 
 app = Flask(__name__)
 # needed for the flask-wtf
@@ -22,7 +21,6 @@ app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(
     basedir, "data.sqlite"
 )
-print(app.config["SQLALCHEMY_DATABASE_URI"])
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
