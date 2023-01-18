@@ -2,4 +2,5 @@ flask
 flask_bootstrap
 flask_moment
 flask-wtf
+flask-sqlalchemy
 python-dotenv
