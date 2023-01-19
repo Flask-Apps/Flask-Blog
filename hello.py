@@ -74,10 +74,18 @@ def index():
     form = NameForm()
     if form.validate_on_submit():
         # POST, REDIRECT AND GET
-        old_name = session.get("name")
-        if old_name is not None and old_name != form.name.data:
+        user = User.query.filter_by(username=form.name.data).first()
+        if user is None:
+            user = User(username=form.name.data)
+            db.session.add(user)
+            db.session.commit()
+            session["known"] = False
             flash("Looks like you have changed your name!")
+        else:
+            session["known"] = True
+            flash("We already know you!")
         session["name"] = form.name.data
+        form.name.data = ""
         # status 302 redirect
         # endpoint name is view function attached
         return redirect(url_for("index"))
@@ -86,6 +94,7 @@ def index():
         form=form,
         name=session.get("name"),
         current_time=datetime.utcnow(),
+        known=session.get("known", False)
     )
 
 

@@ -1,15 +1,17 @@
-{% extends "base.html" %}
-{% import "bootstrap/wtf.html" as wtf %}
-{% block title %} IBlog - Home{% endblock %}
-
-{% block page_content %}
+{% extends "base.html" %} {% import "bootstrap/wtf.html" as wtf %} {% block
+title %} IBlog - Home{% endblock %} {% block page_content %}
 <div class="page-header">
-  <h1>Hello, {% if name %} {{ name|capitalize }} {% else %} Stranger {% endif %}</h1>
+  <h1>
+    Hello, {% if name %} {{ name|capitalize }} {% else %} Stranger {% endif %}
+  </h1>
+  {% if not known %}
+  <p>Pleased to meet you!</p>
+  {% else %}
+  <p>Happy to see you again!</p>
+  {% endif %}
 </div>
 
-{{ wtf.quick_form(form) }}
-
-{% import 'macros.html' as macros %}
+{{ wtf.quick_form(form) }} {% import 'macros.html' as macros %}
 <ul>
   {% for comment in comments %} {{ macros.render_comment(comment) }} {% endfor
   %}
