@@ -60,3 +60,11 @@ def delete_row():
 def get_object_from_database():
     user_role = Role.query.filter_by(name="User").first()
     return user_role
+
+
+def get_users_from_role():
+    # we can apply filter because we have used lazy="dynamic"
+    # this won't execute the query right away so we can
+    # add to the query
+    print(user_role.users.order_by(User.username).all())
+    print(user_role.users.order_by(User.username).count())

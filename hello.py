@@ -34,7 +34,7 @@ class Role(db.Model):
     name = db.Column(db.String(64), unique=True)
     # representing one to many
     # a new column called role will be introduced in users table
-    users = db.relationship("User", backref="role")
+    users = db.relationship("User", backref="role", lazy="dynamic")
 
     def __repr__(self):
         return "<Role %r>" % self.name
