@@ -3,4 +3,5 @@ flask_bootstrap
 flask_moment
 flask-wtf
 flask-sqlalchemy
+flask-migrate
 python-dotenv

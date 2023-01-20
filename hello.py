@@ -5,6 +5,8 @@ from flask_bootstrap import Bootstrap
 from flask_moment import Moment
 from flask_wtf import FlaskForm
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 
@@ -26,6 +28,8 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 bootstrap = Bootstrap(app)
 moment = Moment(app)
+# adds flask db command with several subcommands
+migrate = Migrate(app, db)
 
 
 class Role(db.Model):
@@ -69,6 +73,13 @@ class NameForm(FlaskForm):
     submit = SubmitField("Submit")
 
 
+# adding objects to the import list
+# they will be available on the flask shell, no explicit imports needed
+@app.shell_context_processor
+def make_shell_context():
+    return dict(db=db, User=User, Role=Role)
+
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     form = NameForm()
@@ -94,7 +105,7 @@ def index():
         form=form,
         name=session.get("name"),
         current_time=datetime.utcnow(),
-        known=session.get("known", False)
+        known=session.get("known", False),
     )
 
 
