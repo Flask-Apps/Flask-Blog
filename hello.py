@@ -6,35 +6,18 @@ from flask_moment import Moment
 from flask_wtf import FlaskForm
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from flask_mail import Mail, Message
+
 
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 
 from datetime import datetime
-from dotenv import load_dotenv
-from threading import Thread
 
-load_dotenv()
+
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 app = Flask(__name__)
-# needed for the flask-wtf
-app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(
-    basedir, "data.sqlite"
-)
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
-app.config["MAIL_SERVER"] = "smtp.googlemail.com"
-app.config["MAIL_PORT"] = 587
-app.config["MAIL_USE_TLS"] = True
-app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME")
-app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD")
-app.config["IBLOG_MAIL_SUBJECT_PREFIX"] = "[IBlog]"
-app.config["IBLOG_MAIL_SENDER"] = "IBlog Admin <admin@iblog.com>"
-app.config["IBLOG_ADMIN"] = os.environ.get("IBLOG_ADMIN")
 
 
 db = SQLAlchemy(app)
@@ -44,36 +27,6 @@ moment = Moment(app)
 migrate = Migrate(app, db)
 mail = Mail(app)
 
-
-class Role(db.Model):
-    __tablename__ = "roles"
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), unique=True)
-    # representing one to many
-    # a new column called role will be introduced in users table
-    users = db.relationship("User", backref="role", lazy="dynamic")
-
-    def __repr__(self):
-        return "<Role %r>" % self.name
-
-    def __str__(self):
-        return self.name
-
-
-class User(db.Model):
-    __tablename__ = "users"
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64), unique=True, index=True)
-    role_id = db.Column(db.Integer, db.ForeignKey("roles.id"))
-    # we can also define many to one like this:
-    # a new column called users will be introduced in Role model
-    # role = db.relationship("Role", backref="users")
-
-    def __repr__(self):
-        return "<User %r>" % self.username
-
-    def __str__(self):
-        return self.username
 
 
 class NameForm(FlaskForm):
@@ -86,25 +39,7 @@ class NameForm(FlaskForm):
     submit = SubmitField("Submit")
 
 
-def send_async_email(app, msg):
-    # needs the application context to be created artificially
-    # contexts are associated with a thread when mail.send() executes
-    with app.app_context():
-        mail.send(msg)
 
-
-def send_email(to, subject, template, **kwargs):
-    msg = Message(
-        app.config["IBLOG_MAIL_SUBJECT_PREFIX"] + subject,
-        sender=app.config["IBLOG_MAIL_SENDER"],
-        recipients=[to],
-    )
-    msg.body = render_template(template + ".txt", **kwargs)
-    msg.html = render_template(template + ".html", **kwargs)
-    # moving email sending function to a background thread
-    thr = Thread(target=send_async_email, args=[app, msg])
-    thr.start()
-    return thr
 
 
 # adding objects to the import list
