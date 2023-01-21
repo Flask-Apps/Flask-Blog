@@ -6,12 +6,14 @@ from flask_moment import Moment
 from flask_wtf import FlaskForm
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask_mail import Mail, Message
 
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 
 from datetime import datetime
 from dotenv import load_dotenv
+from threading import Thread
 
 load_dotenv()
 
@@ -25,11 +27,22 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(
 )
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
+app.config["MAIL_SERVER"] = "smtp.googlemail.com"
+app.config["MAIL_PORT"] = 587
+app.config["MAIL_USE_TLS"] = True
+app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME")
+app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD")
+app.config["IBLOG_MAIL_SUBJECT_PREFIX"] = "[IBlog]"
+app.config["IBLOG_MAIL_SENDER"] = "IBlog Admin <admin@iblog.com>"
+app.config["IBLOG_ADMIN"] = os.environ.get("IBLOG_ADMIN")
+
+
 db = SQLAlchemy(app)
 bootstrap = Bootstrap(app)
 moment = Moment(app)
 # adds flask db command with several subcommands
 migrate = Migrate(app, db)
+mail = Mail(app)
 
 
 class Role(db.Model):
@@ -73,6 +86,27 @@ class NameForm(FlaskForm):
     submit = SubmitField("Submit")
 
 
+def send_async_email(app, msg):
+    # needs the application context to be created artificially
+    # contexts are associated with a thread when mail.send() executes
+    with app.app_context():
+        mail.send(msg)
+
+
+def send_email(to, subject, template, **kwargs):
+    msg = Message(
+        app.config["IBLOG_MAIL_SUBJECT_PREFIX"] + subject,
+        sender=app.config["IBLOG_MAIL_SENDER"],
+        recipients=[to],
+    )
+    msg.body = render_template(template + ".txt", **kwargs)
+    msg.html = render_template(template + ".html", **kwargs)
+    # moving email sending function to a background thread
+    thr = Thread(target=send_async_email, args=[app, msg])
+    thr.start()
+    return thr
+
+
 # adding objects to the import list
 # they will be available on the flask shell, no explicit imports needed
 @app.shell_context_processor
@@ -92,6 +126,8 @@ def index():
             db.session.commit()
             session["known"] = False
             flash("Looks like you have changed your name!")
+            if admin := app.config["IBLOG_ADMIN"]:
+                send_email(admin, "New User", "mail/new_user", user=user)
         else:
             session["known"] = True
             flash("We already know you!")
