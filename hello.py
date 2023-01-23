@@ -3,16 +3,9 @@ import os
 from flask import Flask, render_template, session, redirect, url_for, flash
 from flask_bootstrap import Bootstrap
 from flask_moment import Moment
-from flask_wtf import FlaskForm
+
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-
-
-from wtforms import StringField, SubmitField
-from wtforms.validators import DataRequired
-
-from datetime import datetime
-
 
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -28,76 +21,11 @@ migrate = Migrate(app, db)
 mail = Mail(app)
 
 
-
-class NameForm(FlaskForm):
-    name = StringField(
-        "What is your name?",
-        validators=[
-            DataRequired(),
-        ],
-    )
-    submit = SubmitField("Submit")
-
-
-
-
-
 # adding objects to the import list
 # they will be available on the flask shell, no explicit imports needed
 @app.shell_context_processor
 def make_shell_context():
     return dict(db=db, User=User, Role=Role)
-
-
-@app.route("/", methods=["GET", "POST"])
-def index():
-    form = NameForm()
-    if form.validate_on_submit():
-        # POST, REDIRECT AND GET
-        user = User.query.filter_by(username=form.name.data).first()
-        if user is None:
-            user = User(username=form.name.data)
-            db.session.add(user)
-            db.session.commit()
-            session["known"] = False
-            flash("Looks like you have changed your name!")
-            if admin := app.config["IBLOG_ADMIN"]:
-                send_email(admin, "New User", "mail/new_user", user=user)
-        else:
-            session["known"] = True
-            flash("We already know you!")
-        session["name"] = form.name.data
-        form.name.data = ""
-        # status 302 redirect
-        # endpoint name is view function attached
-        return redirect(url_for("index"))
-    return render_template(
-        "index.html",
-        form=form,
-        name=session.get("name"),
-        current_time=datetime.utcnow(),
-        known=session.get("known", False),
-    )
-
-
-@app.route("/user/<name>")
-def user(name):
-    comments = [
-        "When the horizon is at the top it's interesting",
-        "When the horizon is at the bottom it's interesting",
-        "When the horizon is at the middle it's not interesting",
-    ]
-    return render_template("user.html", name=name, comments=comments)
-
-
-@app.errorhandler(404)
-def page_not_found(e):
-    return render_template("404.html"), 404
-
-
-@app.errorhandler(500)
-def internal_server_error(e):
-    return render_template("500.html"), 500
 
 
 if __name__ == "__main__":
