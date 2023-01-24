@@ -18,8 +18,8 @@ def index():
             db.session.commit()
             session["known"] = False
             flash("Looks like you have changed your name!")
-            if admin := app.config["IBLOG_ADMIN"]:
-                send_email(admin, "New User", "mail/new_user", user=user)
+            # if admin := app.config["IBLOG_ADMIN"]:
+            #     send_email(admin, "New User", "mail/new_user", user=user)
         else:
             session["known"] = True
             flash("We already know you!")
@@ -27,7 +27,7 @@ def index():
         form.name.data = ""
         # status 302 redirect
         # endpoint name is view function attached
-        return redirect(url_for("index"))
+        return redirect(url_for(".index"))
     return render_template(
         "index.html",
         form=form,
