@@ -27,6 +27,9 @@ def index():
         form.name.data = ""
         # status 302 redirect
         # endpoint name is view function attached
+        # namespace.endpoint, here main.index
+        # or .index blueprint name for the current request is used to
+        # complete the endpoint name
         return redirect(url_for(".index"))
     return render_template(
         "index.html",

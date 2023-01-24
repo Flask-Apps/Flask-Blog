@@ -7,4 +7,6 @@ main = Blueprint("main", __name__)
 # the views and erros are going to import main blueprint object
 # so the imports are going to fail unless the circular reference
 # occurs after main is defined
-from . import views, errors
+
+
+from . import views, errors  # noqa
