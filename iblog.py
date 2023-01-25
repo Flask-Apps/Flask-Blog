@@ -16,3 +16,7 @@ def make_shell_context():
     they will be available on the flask shell, no explicit imports needed
     """
     return dict(db=db, User=User, Role=Role)
+
+
+if __name__ == "__main__":
+    app.run("0.0.0.0")
