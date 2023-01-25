@@ -20,7 +20,9 @@ class BasicsTestCase(unittest.TestCase):
         self.app_context.pop()
 
     def test_app_exists(self):
+        """Ensure application instance exists"""
         self.assertFalse(current_app is None)
 
     def test_app_is_testing(self):
+        """Ensure application is running under the testing configuration"""
         self.assertTrue(current_app.config["TESTING"])
