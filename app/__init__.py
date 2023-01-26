@@ -15,7 +15,7 @@ db = SQLAlchemy()
 
 
 def create_app(config_name):
-    """Factory for creating app instances
+    """Factory function for creating app instances
 
     Args:
         config_name (str): name of the config class to use
@@ -23,7 +23,6 @@ def create_app(config_name):
     Returns:
         An application instance created with the factory function
     """
-    # factory function
     app = Flask(__name__)
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
@@ -36,6 +35,7 @@ def create_app(config_name):
     # attach routes and custom error pages here
     from .main import main as main_blueprint
 
+    # register the blueprint to an app
     app.register_blueprint(main_blueprint)
 
     return app

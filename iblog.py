@@ -5,6 +5,7 @@ from flask_migrate import Migrate
 
 
 app = create_app(os.getenv("FLASK_CONFIG", "default"))
+
 # adds flask db command with several subcommands
 migrate = Migrate(app, db)
 
