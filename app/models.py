@@ -1,4 +1,5 @@
-from . import db
+from . import db, login_manager
+from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
@@ -17,7 +18,7 @@ class Role(db.Model):
         return self.name
 
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, index=True)
@@ -25,6 +26,8 @@ class User(db.Model):
     # we can also define many to one like this:
     # a new column called users will be introduced in Role model
     # role = db.relationship("Role", backref="users")
+
+    email = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
 
     def __repr__(self):
@@ -43,3 +46,8 @@ class User(db.Model):
 
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
