@@ -2,6 +2,7 @@ import os
 from app import create_app, db
 from app.models import User, Role
 from flask_migrate import Migrate
+from flask_login import login_required
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -29,6 +30,15 @@ def test():
 
     tests = unittest.TestLoader().discover("tests")
     unittest.TextTestRunner(verbosity=2).run(tests)
+
+
+@app.route("/secret")
+@login_required
+def secret():
+    """If the user is not authenticated flask_login will
+    intercept the request and send the user to the login page
+    """
+    return "Only authenticated users are allowed!"
 
 
 if __name__ == "__main__":

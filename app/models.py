@@ -50,4 +50,14 @@ class User(UserMixin, db.Model):
 
 @login_manager.user_loader
 def load_user(user_id):
+    """Retrieve information about the logged-in user
+
+    Args:
+        user_id (str): user identifier
+
+    Returns:
+        - User: User object if valid OR,
+        - None: User identifier is invalid or error occurred
+
+    """
     return User.query.get(int(user_id))
