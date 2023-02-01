@@ -2,7 +2,13 @@
 title %} IBlog - Home{% endblock %} {% block page_content %}
 <div class="page-header">
   <h1>
-    Hello, {% if name %} {{ name|capitalize }} {% else %} Stranger {% endif %}
+    Hello, 
+    {% if current_user.is_authenticated %}
+      {{ current_user.username|capitalize }}
+    {% else %}
+      Stranger
+    {% endif %}
+    <!-- {% if name %} {{ name|capitalize }} {% else %} Stranger {% endif %} -->
   </h1>
   {% if not known %}
   <p>Pleased to meet you!</p>
