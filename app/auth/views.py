@@ -2,6 +2,7 @@ from flask import render_template, redirect, request, url_for, flash
 from flask_login import login_user, logout_user, login_required
 from . import auth
 from .. import db
+from ..email import send_email
 from ..models import User
 from .forms import LoginForm, RegistrationForm
 
@@ -17,8 +18,17 @@ def register():
         )
         db.session.add(user)
         db.session.commit()
-        flash("You can now login.")
-        return redirect(url_for("auth.login"))
+        token = user.generate_confirmation_token()
+        send_email(
+            user.email,
+            "Confirm You Account",
+            "auth/email/confirm",
+            user=user,
+            token=token,
+        )
+        flash("A confirmation email has been sent to you by email.")
+        return redirect(url_for("main.index"))
+        # return redirect(url_for("auth.login"))
     return render_template("auth/register.html", form=form)
 
 
