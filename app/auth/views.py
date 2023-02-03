@@ -1,10 +1,40 @@
-from flask import render_template, redirect, request, url_for, flash
+import os
+
+from flask import (
+    current_user,
+    render_template,
+    redirect,
+    request,
+    url_for,
+    flash,
+)  # noqa
 from flask_login import login_user, logout_user, login_required
 from . import auth
 from .. import db
 from ..email import send_email
 from ..models import User
 from .forms import LoginForm, RegistrationForm
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
+@auth.before_app_request
+def before_request():
+    if (
+        current_user.is_authenticated
+        and not current_user.confirmed
+        and request.blueprint != "auth"
+        and request.endpoint != "static"
+    ):
+        return redirect(url_for("auth.unconfirmed"))
+
+
+@auth.route("/unconfirmed")
+def unconfirmed():
+    if current_user.is_anonymous or current_user.confirmed:
+        return redirect(url_for("main.index"))
+    return render_template("auth/unconfirmed.html")
 
 
 @auth.route("/register", methods=["GET", "POST"])
@@ -30,6 +60,20 @@ def register():
         return redirect(url_for("main.index"))
         # return redirect(url_for("auth.login"))
     return render_template("auth/register.html", form=form)
+
+
+@auth.route("/confirm/<token>")
+@login_required
+def confirm(token):
+    if current_user.confirmed:
+        return redirect(url_for("main.index"))
+    if current_user.confirm(
+        token, expiration=os.getenv("TOKEN_EXPIRE_TIME", 3600)
+    ):  # noqa
+        db.session.commit()
+    else:
+        flash("The confirmation link is invalid or has expired.")
+    return redirect(url_for("main.index"))
 
 
 @auth.route("/login", methods=["GET", "POST"])
