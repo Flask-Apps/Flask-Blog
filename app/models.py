@@ -12,6 +12,13 @@ class Role(db.Model):
     # representing one to many
     # a new column called role will be introduced in users table
     users = db.relationship("User", backref="role", lazy="dynamic")
+    default = db.Column(db.Boolean, default=False, index=True)
+    permissions = db.Column(db.Integer)
+
+    def __init__(self, **kwargs):
+        super(Role, self).__init__(**kwargs)
+        if self.permisssions is None:
+            self.permisssions = 0
 
     def __repr__(self):
         return "<Role %r>" % self.name
