@@ -5,6 +5,15 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer as Serializer
 
 
+class Permission:
+    # Using power of 2 helps to keep each combination unique
+    FOLLOW = 1
+    COMMENT = 2
+    WRITE = 4
+    MODERATE = 8
+    ADMIN = 16
+
+
 class Role(db.Model):
     __tablename__ = "roles"
     id = db.Column(db.Integer, primary_key=True)
@@ -17,14 +26,62 @@ class Role(db.Model):
 
     def __init__(self, **kwargs):
         super(Role, self).__init__(**kwargs)
-        if self.permisssions is None:
-            self.permisssions = 0
+        # sql alchemy will set the permissions field None by default
+        # we use class constructor to set it to 0 if an initial value
+        # isn't provided in the constructor arguments
+        # This can be done easily by using default value though
+        if self.permissions is None:
+            self.permissions = 0
 
     def __repr__(self):
         return "<Role %r>" % self.name
 
     def __str__(self):
         return self.name
+
+    def add_permission(self, perm):
+        if not self.has_permission(perm):
+            self.permissions += perm
+
+    def remove_permission(self, perm):
+        if self.has_permission(perm):
+            self.permissions -= perm
+
+    def reset_permission(self):
+        self.permissions = 0
+
+    def has_permissions(self, perm):
+        return self.permissions & perm == perm
+
+    @staticmethod
+    def insert_roles():
+        roles = {
+            "User": [Permission.FOLLOW, Permission.COMMENT, Permission.WRITE],
+            "Moderator": [
+                Permission.FOLLOW,
+                Permission.COMMENT,
+                Permission.WRITE,
+                Permission.MODERATE,
+            ],
+            "Administrator": [
+                Permission.FOLLOW,
+                Permission.COMMENT,
+                Permission.WRITE,
+                Permission.MODERATE,
+                Permission.ADMIN,
+            ],
+        }
+        default_role = "User"
+        for r in roles:
+            role = Role.query.filter_by(name=r).first()
+            if role is None:
+                role = Role(name=r)
+            role.reset_permissions()
+            for perm in roles(r):
+                role.add_permission(perm)
+            role.default = {role.name == default_role}
+            db.session.add(role)
+        db.session.commit()
 
 
 class User(UserMixin, db.Model):
@@ -39,6 +96,14 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=False)
+
+    def __init__(self, **kwargs) -> None:
+        super(User, self).__init__(**kwargs)
+        if self.role is None:
+            if self.email == current_app.config["IBLOG_ADMIN"]:
+                self.role = Role.query.filter_by(name="Administrator").first()
+            if self.role is None:
+                self.role = Role.query.filter_by(default=True).first()
 
     def __repr__(self):
         return "<User %r>" % self.username
