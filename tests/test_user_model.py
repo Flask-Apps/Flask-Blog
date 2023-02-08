@@ -50,3 +50,11 @@ class UserModelTestCase(unittest.TestCase):
         self.assertTrue(u.confirm(token))
         time.sleep(2)
         self.assertFalse(u.confirm(token, expiration=1))
+
+    def test_user_role(self):
+        u = User(email="m1@example.com", password="cat1")
+        self.assertTrue(u.can(Permission.FOLLOW))
+        self.assertTrue(u.can(Permission.COMMENT))
+        self.assertTrue(u.can(Permission.WRITE))
+        self.assertFalse(u.can(Permission.MODERATE))
+        self.assertFalse(u.can(Permission.ADMIN))

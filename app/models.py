@@ -1,6 +1,6 @@
 from . import db, login_manager
 from flask import current_app
-from flask_login import UserMixin
+from flask_login import UserMixin, AnonymousUserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer as Serializer
 
@@ -50,7 +50,7 @@ class Role(db.Model):
     def reset_permission(self):
         self.permissions = 0
 
-    def has_permissions(self, perm):
+    def has_permission(self, perm):
         return self.permissions & perm == perm
 
     @staticmethod
@@ -76,10 +76,10 @@ class Role(db.Model):
             role = Role.query.filter_by(name=r).first()
             if role is None:
                 role = Role(name=r)
-            role.reset_permissions()
-            for perm in roles(r):
+            role.reset_permission()
+            for perm in roles[r]:
                 role.add_permission(perm)
-            role.default = {role.name == default_role}
+            role.default = role.name == default_role
             db.session.add(role)
         db.session.commit()
 
@@ -138,6 +138,23 @@ class User(UserMixin, db.Model):
         self.confirmed = True
         db.session.add(self)
         return True
+
+    def can(self, perm):
+        return self.role is not None and self.role.has_permission(perm)
+
+    def is_administrator(self):
+        return self.can(Permission.ADMIN)
+
+
+class AnonymousUser(AnonymousUserMixin):
+    def can(self, permission):  # noqa
+        return False
+
+    def is_administrator(self):
+        return False
+
+
+login_manager.anonymous_user = AnonymousUser
 
 
 @login_manager.user_loader
