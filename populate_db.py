@@ -2,6 +2,20 @@ from iblog import db
 from iblog import Role, User, app
 
 
+def fix_role_permission_to_ones_lacking():
+    # Update the user list so that all the user accounts that were create
+    # b4 adding roles and permission existed have a role assigned
+    admin_role = Role.query.filter_by(name="Administrator").first()
+    default_role = Role.query.filter_by(default=True).first()
+    for u in User.query.all():
+        if u.role is None:
+            if u.email == app.config["IBLOG_ADMIN"]:
+                u.role = admin_role
+            else:
+                u.role = default_role
+    db.session.commit()
+
+
 with app.app_context():
     # brute force: remove the old tables
     db.drop_all()
@@ -9,6 +23,7 @@ with app.app_context():
     db.create_all()
 
     Role.insert_roles()
+    fix_role_permission_to_ones_lacking()
 
     # add to roles table using Role model
     # admin_role = Role(name="Admin")
