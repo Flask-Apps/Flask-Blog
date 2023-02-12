@@ -40,6 +40,9 @@ class Role(db.Model):
     def __str__(self):
         return self.name
 
+    def has_permission(self, perm):
+        return self.permissions & perm == perm
+
     def add_permission(self, perm):
         if not self.has_permission(perm):
             self.permissions += perm
@@ -50,9 +53,6 @@ class Role(db.Model):
 
     def reset_permission(self):
         self.permissions = 0
-
-    def has_permission(self, perm):
-        return self.permissions & perm == perm
 
     @staticmethod
     def insert_roles():
