@@ -54,6 +54,10 @@ class EditProfileAdminForm(FlaskForm):
     confirmed = BooleanField("Confirmed")
     # coerce convert the user i/p (str) to int
     # user selected value will be converted to int
+    # identifier for each role is set to id of each role (int)
+    # since we use coerce=int so field values are stored as integers
+    # instead of he default(str)
+    # form.role.data = 1
     role = SelectField("Role", coerce=int)
     name = StringField("Real Name", validators=[Length(0, 64)])
     location = StringField("Location", validators=[Length(0, 64)])
@@ -66,6 +70,7 @@ class EditProfileAdminForm(FlaskForm):
             (role.id, role.name)
             for role in Role.query.order_by(Role.name).all()
         ]
+        # for the validation we'll need this
         self.user = user
 
     def validate_email(self, field):
