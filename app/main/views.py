@@ -40,11 +40,17 @@ def index():
     )
 
 
-@main.route("/user/<name>")
-def user(name):
-    comments = [
-        "When the horizon is at the top it's interesting",
-        "When the horizon is at the bottom it's interesting",
-        "When the horizon is at the middle it's not interesting",
-    ]
-    return render_template("user.html", name=name, comments=comments)
+@main.route("/user/<username>")
+def user(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    return render_template("user.html", user=user)
+
+
+# @main.route("/user/<name>")
+# def user(name):
+#     comments = [
+#         "When the horizon is at the top it's interesting",
+#         "When the horizon is at the bottom it's interesting",
+#         "When the horizon is at the middle it's not interesting",
+#     ]
+#     return render_template("user.html", name=name, comments=comments)
