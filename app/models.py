@@ -1,5 +1,7 @@
+import hashlib
+
 from . import db, login_manager
-from flask import current_app
+from flask import current_app, request
 from flask_login import UserMixin, AnonymousUserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer as Serializer
@@ -104,6 +106,8 @@ class User(UserMixin, db.Model):
     about_me = db.Column(db.Text())
     member_since = db.Column(db.DateTime(), default=datetime.utcnow)
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
+    # caching the md5 hash to avoid frequent cpu intensive operation
+    avatar_hash = db.Column(db.String(32))
 
     def __init__(self, **kwargs) -> None:
         super(User, self).__init__(**kwargs)
@@ -112,6 +116,8 @@ class User(UserMixin, db.Model):
                 self.role = Role.query.filter_by(name="Administrator").first()
             if self.role is None:
                 self.role = Role.query.filter_by(default=True).first()
+        if self.email is not None and self.avatar_hash is None:
+            self.avatar_hash = self.gravatar_hash()
 
     def __repr__(self):
         return "<User %r>" % self.username
@@ -147,6 +153,22 @@ class User(UserMixin, db.Model):
         db.session.add(self)
         return True
 
+    def generate_reset_token(self):
+        s = Serializer(current_app.config["SECRET_KEY"])
+        return s.dumps({"reset": self.id})
+
+    def reset_password(self, token, new_password, expiration=3600):
+        s = Serializer(current_app.config["SECRET_KEY"])
+        try:
+            data = s.loads(token, max_age=expiration)
+        except:  # noqa
+            return False
+        if data.get("reset") != self.id:
+            return False
+        self.password = new_password
+        db.session.add(self)
+        return True
+
     def can(self, perm):
         return self.role is not None and self.role.has_permission(perm)
 
@@ -157,6 +179,40 @@ class User(UserMixin, db.Model):
         self.last_seen = datetime.utcnow()
         db.session.add(self)
         db.session.commit()
+
+    def generate_email_change_token(self, new_email):
+        s = Serializer(current_app.config["SECRET_KEY"])
+        return s.dumps({"change_email": self.id, "new_email": new_email})
+
+    def change_email(self, token, expiration=3600):
+        s = Serializer(current_app["SECRET_KEY"])
+        try:
+            data = s.loads(token, max_age=expiration)
+        except:  # noqa
+            return False
+        if data.get("change_email") != self.id:
+            return False
+        new_email = data.get("new_email")
+        if new_email is None:
+            return False
+        if self.query.filter_by(email=new_email).first() is not None:
+            return False
+        self.email = new_email
+        # after email change create a new avatar hash
+        self.avatar_hash = self.gravatar_hash()
+        db.session.add(self)
+        return True
+
+    def gravatar_hash(self):
+        return hashlib.md5(self.email.lower().encode("utf-8")).hexdigest()
+
+    def gravatar(self, size=100, default="identicon", rating="g"):
+        if request.is_secure:
+            url = "https://secure,gravatar.com/avatar"
+        else:
+            url = "http://www,gravatar.com/avatar"
+        hash = self.avatar_hash or self.gravatar_hash()
+        return f"{url}/{hash}?s={size}&d={default}&r={rating}"
 
 
 class AnonymousUser(AnonymousUserMixin):
