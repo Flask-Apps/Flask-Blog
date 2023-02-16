@@ -18,7 +18,7 @@ title %} IBlog - Home{% endblock %} {% block page_content %}
       <a href="{{ url_for('.user', username=post.author.username) }}">
         <img
           src="{{ post.author.gravatar(size=40) }}"
-          alt="Profile Pic"
+          alt=""
           class="img-rounded profile-thumbnail"
         />
       </a>
