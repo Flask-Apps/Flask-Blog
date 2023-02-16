@@ -108,6 +108,8 @@ class User(UserMixin, db.Model):
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
     # caching the md5 hash to avoid frequent cpu intensive operation
     avatar_hash = db.Column(db.String(32))
+    # one to many relationship User 1-n Post
+    posts = db.relationship("Post", backref="author", lazy="dynamic")
 
     def __init__(self, **kwargs) -> None:
         super(User, self).__init__(**kwargs)
@@ -213,6 +215,14 @@ class User(UserMixin, db.Model):
             url = "http://www,gravatar.com/avatar"
         hash = self.avatar_hash or self.gravatar_hash()
         return f"{url}/{hash}?s={size}&d={default}&r={rating}"
+
+
+class Post(db.Model):
+    __tablename__ = "posts"
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    author_id = db.Column(db.Integer, db.ForeignKey("Users.id"))
 
 
 class AnonymousUser(AnonymousUserMixin):

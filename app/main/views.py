@@ -1,45 +1,22 @@
-from datetime import datetime
-from flask import render_template, session, redirect, url_for, flash
+from flask import render_template, redirect, url_for, flash
 from flask_login import login_required, current_user
-from .forms import NameForm, EditProfileForm, EditProfileAdminForm
+from .forms import EditProfileForm, EditProfileAdminForm, PostForm
 from .. import db
-from ..models import User, Role
+from ..models import User, Role, Permission, Post
 from . import main
 from ..decorators import admin_required
 
 
 @main.route("/", methods=["GET", "POST"])
 def index():
-    form = NameForm()
-    if form.validate_on_submit():
-        # POST, REDIRECT AND GET
-        user = User.query.filter_by(username=form.name.data).first()
-        if user is None:
-            user = User(username=form.name.data)
-            db.session.add(user)
-            db.session.commit()
-            session["known"] = False
-            flash("Looks like you have changed your name!")
-            # if admin := app.config["IBLOG_ADMIN"]:
-            #     send_email(admin, "New User", "mail/new_user", user=user)
-        else:
-            session["known"] = True
-            flash("We already know you!")
-        session["name"] = form.name.data
-        form.name.data = ""
-        # status 302 redirect
-        # endpoint name is view function attached
-        # namespace.endpoint, here main.index
-        # or .index blueprint name for the current request is used to
-        # complete the endpoint name
+    form = PostForm()
+    if current_user.can(Permission.WRITE) and form.validate_on_submit():
+        post = Post(body=form.body.data, author=current_user._get_current_object())
+        db.session.add(post)
+        db.session.commit()
         return redirect(url_for(".index"))
-    return render_template(
-        "index.html",
-        form=form,
-        name=session.get("name"),
-        current_time=datetime.utcnow(),
-        known=session.get("known", False),
-    )
+    posts = Post.query.order_by(Post.timestamp.desc().all())
+    return render_template("index.html", form=form, posts=posts)
 
 
 @main.route("/user/<username>")

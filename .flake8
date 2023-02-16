@@ -1,2 +1,4 @@
 [flake8]
 exclude = venv/, migrations/
+ignore = E501
+max-line-length = 90
