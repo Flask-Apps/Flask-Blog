@@ -43,5 +43,6 @@ title %} IBlog - {{ user.username }}{% endblock %} {% block page_content %}
     </p>
   </div>
 </div>
+<h3>Posts by {{ user.username }} {% include '_posts.html' %}</h3>
 
 {% endblock %}
