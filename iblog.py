@@ -1,6 +1,6 @@
 import os
 from app import create_app, db
-from app.models import User, Role
+from app.models import User, Role, Post
 from flask_migrate import Migrate
 from flask_login import login_required
 from dotenv import load_dotenv
@@ -20,7 +20,7 @@ def make_shell_context():
     adding objects to the import list
     they will be available on the flask shell, no explicit imports needed
     """
-    return dict(db=db, User=User, Role=Role)
+    return dict(db=db, User=User, Role=Role, Post=Post)
 
 
 @app.cli.command()
