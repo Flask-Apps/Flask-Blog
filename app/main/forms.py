@@ -14,6 +14,7 @@ from wtforms.validators import (
 )
 from flask_wtf import FlaskForm
 from ..models import Role, User
+from flask_pagedown.fields import PageDownField
 
 
 class NameForm(FlaskForm):
@@ -34,12 +35,7 @@ class EditProfileForm(FlaskForm):
 
 
 class EditProfileAdminForm(FlaskForm):
-    email = StringField(
-        "Email",
-        validators=[
-            DataRequired(), Length(0, 64), Email()
-            ]
-        )
+    email = StringField("Email", validators=[DataRequired(), Length(0, 64), Email()])
     username = StringField(
         "Username",
         validators=[
@@ -49,8 +45,7 @@ class EditProfileAdminForm(FlaskForm):
                 "^[A-Za-z][A-Za-z0-9_.]*$",
                 0,  # no special behaviour or options are being set
                 # like re.IGNORECASE, re.MULTILINE, etc
-                "Usernames must have only letters, numbers, dots or"
-                "underscores",
+                "Usernames must have only letters, numbers, dots or" "underscores",
             ),
         ],
     )
@@ -70,8 +65,7 @@ class EditProfileAdminForm(FlaskForm):
     def __init__(self, user, *args, **kwargs):
         super(EditProfileAdminForm, self).__init__(*args, **kwargs)
         self.role.choices = [
-            (role.id, role.name)
-            for role in Role.query.order_by(Role.name).all()
+            (role.id, role.name) for role in Role.query.order_by(Role.name).all()
         ]
         # for the validation we'll need this
         self.user = user
@@ -92,5 +86,6 @@ class EditProfileAdminForm(FlaskForm):
 
 
 class PostForm(FlaskForm):
-    body = TextAreaField("What's on your mind?", validators=[DataRequired()])
+    # body = TextAreaField("What's on your mind?", validators=[DataRequired()])
+    body = PageDownField("What's on your mind?", validators=[DataRequired()])
     submit = SubmitField("Submit")

@@ -7,3 +7,6 @@ flask-migrate
 flask-mail
 flask-login
 python-dotenv
+flask-pagedown
+markdown
+bleach

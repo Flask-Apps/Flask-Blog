@@ -1,5 +1,7 @@
 import hashlib
+import bleach
 
+from markdown import markdown
 from . import db, login_manager
 from flask import current_app, request
 from flask_login import UserMixin, AnonymousUserMixin
@@ -223,6 +225,56 @@ class Post(db.Model):
     body = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     author_id = db.Column(db.Integer, db.ForeignKey(User.id))
+    # keeps the converted text, Markdown to HTML
+    body_html = db.Column(db.Text)
+
+    @staticmethod
+    def on_changed_body(target, value, oldvalue, initiator):
+        """
+        Handles the conversion of Markdown text to HTML
+        Steps:
+        1) markdown() func does initial conversion to HTML
+        2) result passed to clean(), along with the approved tags
+            the clean func removes any tags not on the whitelist
+        3) final conversion done with linkify(),
+            converts any URLs written in plain text into proper <a> links
+        - renders the html version of the body and stores
+            it in body_html
+        """
+        allowed_tags = [
+            "a",
+            "abbr",
+            "acronym",
+            "b",
+            "blockquote",
+            "code",
+            "em",
+            "i",
+            "li",
+            "ol",
+            "pre",
+            "strong",
+            "ul",
+            "h1",
+            "h2",
+            "h3",
+            "p",
+        ]
+        # sanitize to ensure only short list of HTML tags are allowed
+        target.body_html = bleach.linkify(
+            bleach.clean(
+                # server side markdown to html converter
+                markdown(value, output_format="html"),
+                tags=allowed_tags,
+                strip=True,
+            )
+        )
+
+
+# registering the on_changed_body as a listener of SQLAlchemy's
+# "set" even for body
+# invoke when the body field is set to a new value
+db.event.listen(Post.body, "set", Post.on_changed_body)
 
 
 class AnonymousUser(AnonymousUserMixin):

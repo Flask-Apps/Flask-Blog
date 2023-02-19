@@ -16,7 +16,13 @@
         {{ post.author.username }}
       </a>
     </div>
-    <div class="post-body">{{ post.body }}</div>
+    <div class="post-body">
+      {% if post.body_html %}
+      <!-- | safe to not escape the html elements otherwise they
+            appear as tags
+      -->
+      {{ post.body_html | safe }} {% else %} {{ post.body }} {% endif %}
+    </div>
   </li>
   {% endfor %}
 </ul>

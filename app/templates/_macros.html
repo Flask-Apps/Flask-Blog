@@ -21,6 +21,7 @@
     <a href="{{ url_for(endpoint, page=p, **kwargs) }}">{{ p }}</a>
   </li>
   {% endif %} {% else %}
+  <!-- if p is None ... will be displayed both on the left side and the right -->
   <li class="disabled"><a href="#">&hellip;</a></li>
   {% endif %} {% endfor %}
 
