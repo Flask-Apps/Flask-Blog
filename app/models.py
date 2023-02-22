@@ -89,6 +89,14 @@ class Role(db.Model):
         db.session.commit()
 
 
+class Follow(db.Model):
+    __tablename__ = "follows"
+    # many to one using foreignkey
+    follower_id = db.Column(db.Integer, db.ForeignKey("users.id"), primary_key=True)
+    followed_id = db.Column(db.Integer, db.ForeignKey("users.id"), primary_key=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 class User(UserMixin, db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
@@ -96,7 +104,7 @@ class User(UserMixin, db.Model):
     role_id = db.Column(db.Integer, db.ForeignKey("roles.id"))
     # we can also define many to one like this:
     # a new column called users will be introduced in Role model
-    # role = db.relationship("Role", backref="users")
+    # role = db.relationship("Role", backref="users", lazy="dynamic")
 
     email = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
@@ -112,6 +120,28 @@ class User(UserMixin, db.Model):
     avatar_hash = db.Column(db.String(32))
     # one to many relationship User 1-n Post
     posts = db.relationship("Post", backref="author", lazy="dynamic")
+
+    # follower
+    followed = db.relationship(
+        "Follow",
+        foreign_keys=["Follow.follower_id"],
+        backref=db.backref(
+            "follower",
+            # when Follow object is queried,
+            # its related object (i.e., the current object)
+            # should be loaded in the same query
+            lazy="joined",
+        ),
+        lazy="dynamic",
+        cascade="all, delete-orphan",
+    )
+    followers = db.relationship(
+        "Follow",
+        foreign_keys=["Follow.followed_id"],
+        backref=db.backref("followed", lazy="joined"),
+        lazy="dynamic",
+        cascade="all, delete-orphan",
+    )
 
     def __init__(self, **kwargs) -> None:
         super(User, self).__init__(**kwargs)
