@@ -3,7 +3,7 @@ import bleach
 
 from markdown import markdown
 from . import db, login_manager
-from flask import current_app, request
+from flask import current_app  # , request
 from flask_login import UserMixin, AnonymousUserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer as Serializer
@@ -124,7 +124,7 @@ class User(UserMixin, db.Model):
     # follower
     followed = db.relationship(
         "Follow",
-        foreign_keys=["Follow.follower_id"],
+        foreign_keys=[Follow.follower_id],
         backref=db.backref(
             "follower",
             # when Follow object is queried,
@@ -137,7 +137,7 @@ class User(UserMixin, db.Model):
     )
     followers = db.relationship(
         "Follow",
-        foreign_keys=["Follow.followed_id"],
+        foreign_keys=[Follow.followed_id],
         backref=db.backref("followed", lazy="joined"),
         lazy="dynamic",
         cascade="all, delete-orphan",
@@ -152,6 +152,7 @@ class User(UserMixin, db.Model):
                 self.role = Role.query.filter_by(default=True).first()
         if self.email is not None and self.avatar_hash is None:
             self.avatar_hash = self.gravatar_hash()
+        # if User.query.filter_by(email=self.email).first():
 
     def __repr__(self):
         return "<User %r>" % self.username
@@ -191,16 +192,20 @@ class User(UserMixin, db.Model):
         s = Serializer(current_app.config["SECRET_KEY"])
         return s.dumps({"reset": self.id})
 
-    def reset_password(self, token, new_password, expiration=3600):
+    @staticmethod
+    def reset_password(token, new_password, expiration=3600):
         s = Serializer(current_app.config["SECRET_KEY"])
         try:
             data = s.loads(token, max_age=expiration)
         except:  # noqa
             return False
-        if data.get("reset") != self.id:
+        user = User.query.get(data.get("reset"))
+        if user is None:
             return False
-        self.password = new_password
-        db.session.add(self)
+        # if data.get("reset") != user.id:
+        #     return False
+        user.password = new_password
+        db.session.add(user)
         return True
 
     def can(self, perm):
@@ -224,6 +229,8 @@ class User(UserMixin, db.Model):
             data = s.loads(token, max_age=expiration)
         except:  # noqa
             return False
+        # this ensures that one person token can't be used to change email
+        # of another user
         if data.get("change_email") != self.id:
             return False
         new_email = data.get("new_email")
@@ -241,12 +248,34 @@ class User(UserMixin, db.Model):
         return hashlib.md5(self.email.lower().encode("utf-8")).hexdigest()
 
     def gravatar(self, size=100, default="identicon", rating="g"):
-        if request.is_secure:
-            url = "https://secure.gravatar.com/avatar"
-        else:
-            url = "http://www.gravatar.com/avatar"
+        # if request.is_secure:
+        #     url = "https://secure.gravatar.com/avatar"
+        # else:
+        #     url = "http://www.gravatar.com/avatar"
+        url = "https://secure.gravatar.com/avatar"
         hash = self.avatar_hash or self.gravatar_hash()
         return f"{url}/{hash}?s={size}&d={default}&r={rating}"
+
+    def is_following(self, user):
+        if user.id is None:
+            return False
+        return self.followed.filter_by(followed_id=user.id).first() is not None
+
+    def is_followed_by(self, user):
+        # for user who have not been commited to db
+        if user.id is None:
+            return False
+        return self.followers.filter_by(follower_id=user.id).first() is not None
+
+    def follow(self, user):
+        if not self.is_following(user):
+            f = Follow(follower=self, followed=user)
+            db.session.add(f)
+
+    def unfollow(self, user):
+        f = self.followed.filter_by(followed_id=user.id).first()
+        if f:
+            db.session.delete(f)
 
 
 class Post(db.Model):
