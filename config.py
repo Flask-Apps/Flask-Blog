@@ -14,14 +14,14 @@ class Config:
 
     MAIL_SERVER = os.environ.get("MAIL_SERVER", "smtp.googlemail.com")
     MAIL_PORT = int(os.environ.get("MAIL_PORT", "587"))
-    MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS", "true").lower() \
-        in ["true", "on", "1"]
+    MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS", "true").lower() in ["true", "on", "1"]
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
     IBLOG_MAIL_SUBJECT_PREFIX = "[IBlog]"
     IBLOG_MAIL_SENDER = "IBlog Admin <admin@iblog.com>"
     IBLOG_ADMIN = os.environ.get("IBLOG_ADMIN")
     IBLOG_POSTS_PER_PAGE = os.environ.get("IBLOG_POSTS_PER_PAGE")
+    IBLOG_FOLLOWERS_PER_PAGE = os.environ.get("IBLOG_FOLLOWERS_PER_PAGE")
 
     @staticmethod
     def init_app(app):
@@ -52,6 +52,5 @@ config = {
     "development": DevelopmentConfig,
     "testing": TestingConfig,
     "production": ProductionConfig,
-
-    "default": DevelopmentConfig
+    "default": DevelopmentConfig,
 }

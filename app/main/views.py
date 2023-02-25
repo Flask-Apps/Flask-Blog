@@ -158,7 +158,8 @@ def followers(username):
     page = request.args.get("page", 1, type=int)
     pagination = user.followers.paginate(
         page=page,
-        per_page=int(current_app.config["IBLOG_FOLLOWERS_PER_PAGE"], error_out=False),
+        per_page=int(current_app.config["IBLOG_FOLLOWERS_PER_PAGE"]),
+        error_out=False,
     )
     follows = [
         {"user": item.follower, "timestamp": item.timestamp}
@@ -183,7 +184,7 @@ def followed_by(username):
     page = request.args.get("page", 1, type=int)
     pagination = user.followed.paginate(
         page=page,
-        per_page=current_app.config["IBLOG_FOLLOWERS_PER_PAGE"],
+        per_page=int(current_app.config["IBLOG_FOLLOWERS_PER_PAGE"]),
         error_out=False,
     )
     follows = [
