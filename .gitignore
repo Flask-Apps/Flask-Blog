@@ -39,6 +39,7 @@ MANIFEST
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
+*sqlite*
 
 # Unit test / coverage reports
 htmlcov/

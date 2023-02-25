@@ -182,9 +182,11 @@ class UserModelTestCase(unittest.TestCase):
         db.session.add(u1)
         db.session.add(u2)
         db.session.commit()
+
         self.assertFalse(u1.is_following(u2))
         self.assertFalse(u1.is_followed_by(u2))
         timestamp_before = datetime.utcnow()
+
         u1.follow(u2)
         db.session.add(u1)
         db.session.commit()
