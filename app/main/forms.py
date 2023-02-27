@@ -87,5 +87,6 @@ class EditProfileAdminForm(FlaskForm):
 
 class PostForm(FlaskForm):
     # body = TextAreaField("What's on your mind?", validators=[DataRequired()])
+    # client-side Markdown-to-HTML converter implemented in js
     body = PageDownField("What's on your mind?", validators=[DataRequired()])
     submit = SubmitField("Submit")
