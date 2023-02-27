@@ -12,7 +12,7 @@ page_content %}
     </tr>
   </thead>
 
-  {% for follow in follows %}
+  {% for follow in follows %} {% if follow.user != user %}
   <tr>
     <td>
       <a href="{{ url_for('.user', username=follow.user.username) }}">
@@ -26,7 +26,7 @@ page_content %}
     </td>
     <td>{{ moment(follow.timestamp).format('L') }}</td>
   </tr>
-  {% endfor %}
+  {% endif %} {% endfor %}
 </table>
 <div class="pagination">
   {{ macros.pagination_widget(pagination, endpoint, username=user.username) }}
