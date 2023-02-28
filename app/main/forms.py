@@ -90,3 +90,8 @@ class PostForm(FlaskForm):
     # client-side Markdown-to-HTML converter implemented in js
     body = PageDownField("What's on your mind?", validators=[DataRequired()])
     submit = SubmitField("Submit")
+
+
+class CommentForm(FlaskForm):
+    body = StringField("", validators=[DataRequired()])
+    submit = SubmitField("Submit")

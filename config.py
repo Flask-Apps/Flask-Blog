@@ -20,8 +20,9 @@ class Config:
     IBLOG_MAIL_SUBJECT_PREFIX = "[IBlog]"
     IBLOG_MAIL_SENDER = "IBlog Admin <admin@iblog.com>"
     IBLOG_ADMIN = os.environ.get("IBLOG_ADMIN")
-    IBLOG_POSTS_PER_PAGE = os.environ.get("IBLOG_POSTS_PER_PAGE")
-    IBLOG_FOLLOWERS_PER_PAGE = os.environ.get("IBLOG_FOLLOWERS_PER_PAGE")
+    IBLOG_POSTS_PER_PAGE = int(os.environ.get("IBLOG_POSTS_PER_PAGE"))
+    IBLOG_FOLLOWERS_PER_PAGE = int(os.environ.get("IBLOG_FOLLOWERS_PER_PAGE"))
+    IBLOG_COMMENTS_PER_PAGE = int(os.environ.get("IBLOG_COMMENTS_PER_PAGE"))
 
     @staticmethod
     def init_app(app):
