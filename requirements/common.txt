@@ -8,5 +8,6 @@ flask-mail
 flask-login
 python-dotenv
 flask-pagedown
+flask-httpauth
 markdown
 bleach

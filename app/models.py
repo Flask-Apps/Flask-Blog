@@ -3,7 +3,8 @@ import bleach
 
 from markdown import markdown
 from . import db, login_manager
-from flask import current_app  # , request
+from flask import current_app, url_for  # , request
+from app.exceptions import ValidationError
 from flask_login import UserMixin, AnonymousUserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer as Serializer
@@ -293,6 +294,31 @@ class User(UserMixin, db.Model):
                 db.session.add(user)
                 db.session.commit()
 
+    def generate_auth_token(self):
+        s = Serializer(current_app.config["SECRET_KEY"])
+        return s.dumps({"id": self.id})
+
+    @staticmethod
+    def verify_auth_token(token, expiration=3600):
+        s = Serializer(current_app.config["SECRET_KEY"])
+        try:
+            data = s.loads(token, max_age=expiration)
+        except:  # noqa
+            return None
+        return User.query.get(data["id"])
+
+    def to_json(self):
+        json_user = {
+            "url": url_for("api.get_user", id=self.id),
+            "username": self.username,
+            "member_since": self.member_since,
+            "last_seen": self.last_seen,
+            "posts_url": url_for("api.get_user_posts", id=self.id),
+            "followed_posts_url": url_for("api.get_user_followed_posts", id=self.id),
+            "post_count": self.posts.count(),
+        }
+        return json_user
+
 
 class Post(db.Model):
     __tablename__ = "posts"
@@ -345,6 +371,31 @@ class Post(db.Model):
                 strip=True,
             )
         )
+
+    def to_json(self):
+        json_post = {
+            "url": url_for("api.get_post", id=self.id),
+            "body": self.body,
+            "body_html": self.body_html,
+            "timestamp": self.timestamp,
+            "author_url": url_for("api.get_user", id=self.author_id),
+            "comments_url": url_for("api.get_post_comments", id=self.id),
+            "comment_count": self.comments.count(),
+        }
+        return json_post
+
+    @staticmethod
+    def from_json(json_post):
+        body = json_post.get("body")
+        if body is None or body == "":
+            raise ValidationError("post does not have a body")
+        # 1) server-side Markdown rendering is automatically triggered
+        #   by an SQLAlchemy event whenever the body attribute is
+        #   modified
+        # 2) resource urls are defined by the server, not the client
+        # 3) client has no authority to select the author of the blog
+        #   post
+        return Post(body=body)
 
 
 # registering the on_changed_body as a listener of SQLAlchemy's
