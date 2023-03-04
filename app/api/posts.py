@@ -3,8 +3,8 @@ from flask import request, g, jsonify, url_for, current_app
 from . import api
 from ..models import Post, Permission
 from .. import db
-from api.errors import forbidden
-from api.decorators import permission_required
+from .errors import forbidden
+from .decorators import permission_required
 
 
 @api.route("/posts/")
