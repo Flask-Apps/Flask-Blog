@@ -90,7 +90,7 @@ def register():
 def confirm(token):
     if current_user.confirmed:
         return redirect(url_for("main.index"))
-    print("Verifiying token ", token, os.getenv("TOKEN_EXPIRE_TIME"))
+    # print("Verifiying token ", token, os.getenv("TOKEN_EXPIRE_TIME"))
     if current_user.confirm(
         token, expiration=int(os.getenv("TOKEN_EXPIRE_TIME", 3600))
     ):  # noqa
