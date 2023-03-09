@@ -95,6 +95,7 @@ def confirm(token):
         token, expiration=int(os.getenv("TOKEN_EXPIRE_TIME", 3600))
     ):  # noqa
         db.session.commit()
+        flash("You have confirmed your account. Thanks!")
     else:
         flash("The confirmation link is invalid or has expired.")
     return redirect(url_for("main.index"))
