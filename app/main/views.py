@@ -29,16 +29,17 @@ def server_shutdown():
     if not current_app.testing:
         abort(404)
     # this is deprecated
-    # shutdown = request.environ.get('werkzeug.server.shutdown')
-    # # print(shutdown)
-    # if not shutdown:
-    #     abort(500)
-    # shutdown()
+    shutdown = request.environ.get('werkzeug.server.shutdown')
+    # print(shutdown)
+    if not shutdown:
+        # raise RuntimeError("Shutting down")
+        abort(500)
+    shutdown()
 
     # send SIGINT signal to current process to trigger flask server
     # to shut down and release any resources
     # it's like ctrl + c
-    os.kill(os.getpid(), signal.SIGINT)
+    # os.kill(os.getpid(), signal.SIGINT)
     return "Shutting Down..."
 
 

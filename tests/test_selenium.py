@@ -92,14 +92,19 @@ class SeleniumTestCase(unittest.TestCase):
             # time.sleep(2)
 
             # ensure the server has stopped
-            cls.server_thread.join()
+            # print("Driver quit")
+            # cls.server_thread.join()
 
             # destroy database
             db.drop_all()
             db.session.remove()
+            # print("Table and session removed")
 
             # remove application context
+            # print("Popping context")
             cls.app_context.pop()
+            # cls.server_thread.terminate()
+            # print("Popped context")
 
     def setUp(self):
         """Skip tests if selenium cannot start the web browser in setUpClass"""
