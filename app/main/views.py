@@ -1,3 +1,6 @@
+import os
+import signal
+
 from flask import (
     render_template,
     redirect,
@@ -14,6 +17,29 @@ from .. import db
 from ..models import User, Role, Permission, Post, Comment
 from . import main
 from ..decorators import admin_required, permission_required
+
+
+@main.route("/shutdown")
+def server_shutdown():
+    """
+    Ask the server to shutdown by sending a regular
+    HTTP request, as during test server is running on its
+    own thread(selenium testing)
+    """
+    if not current_app.testing:
+        abort(404)
+    # this is deprecated
+    # shutdown = request.environ.get('werkzeug.server.shutdown')
+    # # print(shutdown)
+    # if not shutdown:
+    #     abort(500)
+    # shutdown()
+
+    # send SIGINT signal to current process to trigger flask server
+    # to shut down and release any resources
+    # it's like ctrl + c
+    os.kill(os.getpid(), signal.SIGINT)
+    return "Shutting Down..."
 
 
 @main.route("/", methods=["GET", "POST"])

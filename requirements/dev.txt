@@ -3,3 +3,4 @@ faker
 flake8
 httpie
 coverage
+selenium

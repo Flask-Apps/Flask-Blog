@@ -62,7 +62,7 @@ class FlaskClientTestCase(unittest.TestCase):
         user = User.query.filter_by(email="joe@example.com").first()
         token = user.generate_confirmation_token()
         # response is redirect to home page, test client requests the redirected
-        # page automatically and return it 
+        # page automatically and return it
         response = self.client.get(
             "/auth/confirm/{}".format(token), follow_redirects=True
         )

@@ -44,6 +44,13 @@ class TestingConfig(Config):
     ) or "sqlite:///" + os.path.join(basedir, "data-test.sqlite")
 
 
+class TestingWithSeleniumConfig(TestingConfig):
+    @staticmethod
+    def init_app(app):
+        if os.environ.get("FLASK_RUN_FROM_CLI"):
+            os.environ.pop("FLASK_RUN_FROM_CLI")
+
+
 class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         "DATABASE_URL"
@@ -53,6 +60,7 @@ class ProductionConfig(Config):
 config = {
     "development": DevelopmentConfig,
     "testing": TestingConfig,
+    "testing-with-selenium": TestingWithSeleniumConfig,
     "production": ProductionConfig,
     "default": DevelopmentConfig,
 }
