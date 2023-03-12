@@ -1,7 +1,6 @@
 import unittest
 import threading
 import re
-import time
 from selenium import webdriver
 from app import create_app, fake, db
 from app.models import Role, User
@@ -70,7 +69,7 @@ class SeleniumTestCase(unittest.TestCase):
                     "use_reloader": False,
                     "use_debugger": False,
                 },
-                daemon=True
+                daemon=True,
             )
             # start the server, runs target func in background
             cls.server_thread.start()
