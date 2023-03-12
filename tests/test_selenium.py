@@ -70,6 +70,7 @@ class SeleniumTestCase(unittest.TestCase):
                     "use_reloader": False,
                     "use_debugger": False,
                 },
+                daemon=True
             )
             # start the server, runs target func in background
             cls.server_thread.start()
@@ -93,7 +94,7 @@ class SeleniumTestCase(unittest.TestCase):
 
             # ensure the server has stopped
             # print("Driver quit")
-            # cls.server_thread.join()
+            cls.server_thread.join(2)
 
             # destroy database
             db.drop_all()

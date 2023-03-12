@@ -29,7 +29,7 @@ def server_shutdown():
     if not current_app.testing:
         abort(404)
     # this is deprecated
-    shutdown = request.environ.get('werkzeug.server.shutdown')
+    shutdown = request.environ.get("werkzeug.server.shutdown")
     # print(shutdown)
     if not shutdown:
         # raise RuntimeError("Shutting down")
