@@ -17,7 +17,7 @@ class SeleniumTestCase(unittest.TestCase):
         # start Chrome
         options = webdriver.ChromeOptions()
         # run w/o user interface
-        # options.add_argument("headless")
+        options.add_argument("headless")
         # suppress jibberish from webdriver
         options.add_experimental_option("excludeSwitches", ["enable-logging"])
         try:
