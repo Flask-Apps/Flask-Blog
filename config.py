@@ -24,6 +24,11 @@ class Config:
     IBLOG_FOLLOWERS_PER_PAGE = int(os.environ.get("IBLOG_FOLLOWERS_PER_PAGE"))
     IBLOG_COMMENTS_PER_PAGE = int(os.environ.get("IBLOG_COMMENTS_PER_PAGE"))
 
+    # For measuring db performance
+    # enable recording of the query statistics
+    SQLALCHEMY_RECORD_QUERIES = True
+    IBLOG_SLOW_DB_QUERY_TIME = int(os.environ.get("IBLOG_SLOW_DB_QUERY_TIME", 0.5))
+
     @staticmethod
     def init_app(app):
         pass
