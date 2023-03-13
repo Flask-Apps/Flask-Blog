@@ -27,7 +27,7 @@ class Config:
     # For measuring db performance
     # enable recording of the query statistics
     SQLALCHEMY_RECORD_QUERIES = True
-    IBLOG_SLOW_DB_QUERY_TIME = int(os.environ.get("IBLOG_SLOW_DB_QUERY_TIME", 0.5))
+    IBLOG_SLOW_DB_QUERY_TIME = float(os.environ.get("IBLOG_SLOW_DB_QUERY_TIME", 0.5))
 
     @staticmethod
     def init_app(app):
