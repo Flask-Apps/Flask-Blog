@@ -40,10 +40,11 @@ def make_shell_context():
 #     unittest.TextTestRunner(verbosity=2).run(tests)
 
 
-@app.cli.command
+@app.cli.command()
 def deploy():
     """Run deployment tasks"""
     # migrate database to latest revision
+    db.create_all()
     upgrade()
 
     # create or update user roles

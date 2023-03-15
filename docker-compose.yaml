@@ -1,0 +1,15 @@
+version: "3"
+services:
+  iblog:
+    build: .
+    ports:
+      - "8000:5000"
+    env_file:
+      - docker.env
+    restart: always
+    links:
+      - "db:db"
+  db:
+    image: "mysql/mysql-server:8.0.32"
+    env_file: mysql.env
+    restart: always

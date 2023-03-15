@@ -20,9 +20,9 @@ class Config:
     IBLOG_MAIL_SUBJECT_PREFIX = "[IBlog]"
     IBLOG_MAIL_SENDER = "IBlog Admin <admin@iblog.com>"
     IBLOG_ADMIN = os.environ.get("IBLOG_ADMIN")
-    IBLOG_POSTS_PER_PAGE = int(os.environ.get("IBLOG_POSTS_PER_PAGE"))
-    IBLOG_FOLLOWERS_PER_PAGE = int(os.environ.get("IBLOG_FOLLOWERS_PER_PAGE"))
-    IBLOG_COMMENTS_PER_PAGE = int(os.environ.get("IBLOG_COMMENTS_PER_PAGE"))
+    IBLOG_POSTS_PER_PAGE = int(os.environ.get("IBLOG_POSTS_PER_PAGE", 10))
+    IBLOG_FOLLOWERS_PER_PAGE = int(os.environ.get("IBLOG_FOLLOWERS_PER_PAGE", 10))
+    IBLOG_COMMENTS_PER_PAGE = int(os.environ.get("IBLOG_COMMENTS_PER_PAGE", 10))
 
     # For measuring db performance
     # enable recording of the query statistics
@@ -88,10 +88,44 @@ class ProductionConfig(Config):
         app.logger.addHandler(mail_handler)
 
 
+class HerokuConfig(ProductionConfig):
+    @classmethod
+    def init_app(cls, app):
+        ProductionConfig.init_app(app)
+
+        # log to stderr
+        import logging
+        from logging import StreamHandler
+
+        # heroku considers o/p written by the application to stdout or stderr
+        # logs so a logging handler is added to generate this o/p
+        file_handler = StreamHandler()
+        file_handler.setLevel(logging.INFO)
+        app.logger.addHandler(file_handler)
+
+
+class DockerConfig(ProductionConfig):
+    @classmethod
+    def init_app(cls, app):
+        ProductionConfig.init_app(app)
+
+        # log to stderr
+        import logging
+        from logging import StreamHandler
+
+        # docker automatically captures logs to stderr
+        # and exposes through docker logs command
+        file_handler = StreamHandler()
+        file_handler.setLevel(logging.INFO)
+        app.logger.addHandler(file_handler)
+
+
 config = {
     "development": DevelopmentConfig,
     "testing": TestingConfig,
     "testing-with-selenium": TestingWithSeleniumConfig,
     "production": ProductionConfig,
+    "heroku": HerokuConfig,
+    "docker": DockerConfig,
     "default": DevelopmentConfig,
 }

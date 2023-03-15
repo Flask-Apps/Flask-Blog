@@ -11,3 +11,5 @@ flask-pagedown
 flask-httpauth
 markdown
 bleach
+email_validator
+cryptography
